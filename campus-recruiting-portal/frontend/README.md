@@ -1,5 +1,9 @@
 # Campus Recruiting Portal - Frontend Web Client
 
+[![Watch the Demo Video](../video_preview.png)](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
+> 🎥 **Walkthrough Video**: [Click here to watch the full project demonstration on Google Drive](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
 This folder contains the React web application client for the Campus Recruiting Portal. Built on **React 19** and bundled with **Vite**, the interface utilizes a custom vanilla CSS design system featuring dark mode capability and a responsive, glassmorphic layout.
 
 ---

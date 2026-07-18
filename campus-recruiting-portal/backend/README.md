@@ -1,5 +1,9 @@
 # Campus Recruiting Portal - Backend Engine
 
+[![Watch the Demo Video](../video_preview.png)](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
+> 🎥 **Walkthrough Video**: [Click here to watch the full project demonstration on Google Drive](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
 This folder contains the Java 21 and Spring Boot 4.1 backend engine for the Campus Recruiting Portal. The backend runs as a REST API backed by a MySQL database, providing role-based security via stateless JSON Web Tokens (JWT), transactional recruitment tracking, inline PDF reports, and CSV parsing capabilities.
 
 ---

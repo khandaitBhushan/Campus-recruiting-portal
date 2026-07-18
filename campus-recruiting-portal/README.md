@@ -1,5 +1,9 @@
 # Campus Recruiting Portal (CRP) - Master Manual & Technical Reference Guide
 
+[![Watch the Demo Video](video_preview.png)](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
+> 🎥 **Walkthrough Video**: [Click here to watch the full project demonstration on Google Drive](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
+
 A secure, transactional web portal designed to coordinate university campus placement activities. This application establishes a unified workspace connecting **Students**, **Registered Companies**, and the **University Placement Cell (Admin)** to automate the recruitment pipeline—from company profile validation and job eligibility screening to bulk data imports and dynamic PDF analytics reporting.
 
 ---
