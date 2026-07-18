@@ -6,6 +6,26 @@ import { Users, Building, ShieldAlert, Award, FileSpreadsheet, Download } from '
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleExportPdf = async () => {
+    setDownloading(true);
+    try {
+      const response = await api.get('/api/admin/reports/placement-pdf', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'placement_report.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -168,15 +188,14 @@ const AdminDashboard = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.5' }}>
             Download the official placement statistics PDF generated dynamically by the backend reporting engine.
           </p>
-          <a 
-            href="http://localhost:8080/api/admin/reports/placement-pdf" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <button 
+            onClick={handleExportPdf} 
+            disabled={downloading}
             className="btn btn-primary" 
-            style={{ width: '100%', display: 'flex', gap: '8px' }}
+            style={{ width: '100%', display: 'flex', gap: '8px', cursor: downloading ? 'not-allowed' : 'pointer', opacity: downloading ? 0.7 : 1 }}
           >
-            <Download size={18} /> Export Statistics PDF
-          </a>
+            <Download size={18} /> {downloading ? 'Exporting...' : 'Export Statistics PDF'}
+          </button>
         </div>
       </div>
     </div>
