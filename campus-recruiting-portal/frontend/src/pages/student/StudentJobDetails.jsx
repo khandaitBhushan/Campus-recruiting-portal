@@ -1,8 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import {
+  AlertTriangle,
+  ArrowRight,
+  Award,
+  BriefcaseBusiness,
+  CheckCircle2,
+  CircleAlert,
+  MapPin,
+  Wallet,
+} from 'lucide-react';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
-import { Briefcase, MapPin, DollarSign, Award, AlertTriangle, FileText, CheckCircle2, ChevronLeft } from 'lucide-react';
+import StudentWorkspace from '../../components/StudentWorkspace';
 
 const StudentJobDetails = () => {
   const { id } = useParams();
@@ -13,8 +23,6 @@ const StudentJobDetails = () => {
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Apply form state
   const [coverLetter, setCoverLetter] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,26 +31,28 @@ const StudentJobDetails = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const [jobRes, profileRes, appsRes] = await Promise.all([
+        const [jobResponse, profileResponse, applicationsResponse] = await Promise.all([
           api.get(`/api/postings/${id}`),
           api.get(`/api/students/${user.profileId}`),
-          api.get(`/api/applications/student/${user.profileId}`)
+          api.get(`/api/applications/student/${user.profileId}`),
         ]);
-        setJob(jobRes.data);
-        setProfile(profileRes.data);
-        setApplications(appsRes.data);
-      } catch (err) {
-        console.error('Error fetching job details:', err);
+
+        setJob(jobResponse.data);
+        setProfile(profileResponse.data);
+        setApplications(applicationsResponse.data);
+      } catch (errorResponse) {
+        console.error('Error fetching job details:', errorResponse);
       } finally {
         setLoading(false);
       }
     };
+
     fetchDetails();
   }, [id, user.profileId]);
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
+      <div className="loader-container">
         <div className="loader"></div>
       </div>
     );
@@ -50,35 +60,45 @@ const StudentJobDetails = () => {
 
   if (!job) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Job posting not found</h2>
-        <Link to="/student/jobs" className="btn btn-outline" style={{ marginTop: '20px' }}>
-          Back to Jobs
-        </Link>
-      </div>
+      <StudentWorkspace
+        eyebrow="Role details"
+        title="Job posting not found"
+        description="This role may have been removed or is no longer visible to students."
+        profileName={profile?.name}
+        profileEmail={profile?.email}
+        backLink="/student/jobs"
+        backLabel="Back to roles"
+      >
+        <section className="section-card reveal">
+          <div className="empty-state">
+            <BriefcaseBusiness size={28} />
+            <p>Try returning to the approved jobs board to review current openings.</p>
+            <Link to="/student/jobs" className="btn btn-primary">
+              Back to jobs
+            </Link>
+          </div>
+        </section>
+      </StudentWorkspace>
     );
   }
 
-  // Eligibility checking logic
-  const meetsCgpa = profile.cgpa >= job.minimumCgpa;
-  
+  const meetsCgpa = Number(profile.cgpa) >= Number(job.minimumCgpa);
   const eligibleBranchesList = job.eligibleBranches
     .split(',')
-    .map(b => b.trim().toLowerCase());
+    .map((branch) => branch.trim().toLowerCase());
   const meetsBranch = eligibleBranchesList.includes(profile.branch.trim().toLowerCase());
-
-  const meetsBacklogs = job.backlogsAllowed || profile.activeBacklogs === 0;
-
+  const meetsBacklogs = job.backlogsAllowed || Number(profile.activeBacklogs) === 0;
   const isEligible = meetsCgpa && meetsBranch && meetsBacklogs;
-  const hasApplied = applications.some(app => app.postingId === job.id);
+  const hasApplied = applications.some((application) => application.postingId === job.id);
 
-  const handleApply = async (e) => {
-    e.preventDefault();
+  const handleApply = async (event) => {
+    event.preventDefault();
+
     if (!profile.resumeUrl) {
       setError('You must upload a resume in your profile page before applying.');
       return;
     }
-    
+
     setError('');
     setSuccess('');
     setSubmitting(true);
@@ -87,212 +107,194 @@ const StudentJobDetails = () => {
       await api.post('/api/applications', {
         studentId: profile.id,
         postingId: job.id,
-        coverLetter: coverLetter,
-        resumeUrl: profile.resumeUrl
+        coverLetter,
+        resumeUrl: profile.resumeUrl,
       });
-      setSuccess('Application submitted successfully!');
+      setSuccess('Application submitted successfully.');
       setTimeout(() => {
         navigate('/student/applications');
       }, 1500);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit application.');
+    } catch (errorResponse) {
+      setError(errorResponse.response?.data?.message || 'Failed to submit application.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
-      <Link to="/student/jobs" style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
-        textDecoration: 'none',
-        color: 'var(--text-muted)',
-        marginBottom: '24px',
-        fontSize: '14px',
-        fontWeight: '500'
-      }}>
-        <ChevronLeft size={16} /> Back to Job Openings
-      </Link>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-        {/* Job Info Details */}
-        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: '700' }}>{job.title}</h1>
-              <span className="badge badge-approved">{job.employmentType}</span>
-            </div>
-            <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '16px' }}>{job.companyName}</p>
+    <StudentWorkspace
+      eyebrow="Role details"
+      title={job.title}
+      description="Review compensation, branch fit, and eligibility before sending your application."
+      profileName={profile?.name}
+      profileEmail={profile?.email}
+      backLink="/student/jobs"
+      backLabel="Back to approved roles"
+      actions={
+        hasApplied ? (
+          <Link to="/student/applications" className="btn btn-secondary">
+            View my application
+          </Link>
+        ) : null
+      }
+    >
+      <div className="page-stack">
+        <section className="hero-banner reveal">
+          <h2>{job.companyName}</h2>
+          <p>
+            {job.employmentType} role with a package of {job.ctc} LPA. Deadline:{' '}
+            {new Date(job.deadline).toLocaleDateString()}.
+          </p>
+          <div className="hero-meta">
+            <span className="meta-pill">
+              <MapPin size={15} />
+              {job.location}
+            </span>
+            <span className="meta-pill">
+              <Award size={15} />
+              Minimum CGPA {job.minimumCgpa}
+            </span>
           </div>
+        </section>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px',
-            borderTop: '1px solid var(--border)',
-            borderBottom: '1px solid var(--border)',
-            padding: '16px 0'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <MapPin size={20} color="var(--text-muted)" />
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Location</div>
-                <div style={{ fontSize: '14px', fontWeight: '500' }}>{job.location}</div>
+        <section className="detail-grid">
+          <article className="detail-panel reveal">
+            <div className="detail-stack">
+              <div className="detail-meta-grid">
+                <div className="detail-meta-card">
+                  <span>Location</span>
+                  <strong>{job.location}</strong>
+                </div>
+                <div className="detail-meta-card">
+                  <span>Compensation</span>
+                  <strong>{job.ctc} LPA</strong>
+                </div>
+                <div className="detail-meta-card">
+                  <span>Work type</span>
+                  <strong>{job.employmentType}</strong>
+                </div>
               </div>
+
+              <section className="detail-section">
+                <h3>Role summary</h3>
+                <p>{job.description}</p>
+              </section>
+
+              <section className="detail-section">
+                <h3>Eligibility details</h3>
+                <ul>
+                  <li>
+                    Eligible branches: <strong>{job.eligibleBranches}</strong>
+                  </li>
+                  <li>
+                    Backlogs allowed: <strong>{job.backlogsAllowed ? 'Yes' : 'No'}</strong>
+                  </li>
+                  <li>
+                    Application deadline:{' '}
+                    <strong>{new Date(job.deadline).toLocaleDateString()}</strong>
+                  </li>
+                </ul>
+              </section>
             </div>
+          </article>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <DollarSign size={20} color="var(--text-muted)" />
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Compensation</div>
-                <div style={{ fontSize: '14px', fontWeight: '500' }}>{job.ctc} LPA</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Award size={20} color="var(--text-muted)" />
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>CGPA Cutoff</div>
-                <div style={{ fontSize: '14px', fontWeight: '500' }}>{job.minimumCgpa}</div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '10px' }}>Job Description</h3>
-            <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '15px' }}>{job.description}</p>
-          </div>
-
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '10px' }}>Eligibility Details</h3>
-            <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--text-muted)', fontSize: '15px' }}>
-              <li>Eligible Branches: <strong style={{ color: 'var(--text)' }}>{job.eligibleBranches}</strong></li>
-              <li>Backlogs Allowed: <strong style={{ color: 'var(--text)' }}>{job.backlogsAllowed ? 'Yes' : 'No'}</strong></li>
-              <li>Application Deadline: <strong style={{ color: 'var(--text)' }}>{new Date(job.deadline).toLocaleDateString()}</strong></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Application / Eligibility Panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="glass-panel">
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>Your Eligibility</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px' }}>CGPA (Required: {job.minimumCgpa})</span>
-                <span className={`badge ${meetsCgpa ? 'badge-approved' : 'badge-rejected'}`}>
-                  {profile.cgpa} {meetsCgpa ? '✓' : '✗'}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px' }}>Branch (Required: {job.eligibleBranches})</span>
-                <span className={`badge ${meetsBranch ? 'badge-approved' : 'badge-rejected'}`}>
-                  {profile.branch} {meetsBranch ? '✓' : '✗'}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px' }}>Backlog Limit</span>
-                <span className={`badge ${meetsBacklogs ? 'badge-approved' : 'badge-rejected'}`}>
-                  {profile.activeBacklogs} backlogs {meetsBacklogs ? '✓' : '✗'}
-                </span>
-              </div>
-            </div>
-
-            {hasApplied ? (
-              <div style={{
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                color: 'var(--success)',
-                padding: '16px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}>
-                <CheckCircle2 size={18} />
-                <span>You have already applied for this job.</span>
-              </div>
-            ) : isEligible ? (
-              <div>
-                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>Apply to Position</h4>
-                
-                {error && (
-                  <div style={{
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    color: 'var(--danger)',
-                    padding: '10px 14px',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    marginBottom: '14px'
-                  }}>
-                    {error}
+          <aside className="application-panel reveal">
+            <div className="detail-stack">
+              <section>
+                <h3>Your eligibility</h3>
+                <div className="eligibility-list">
+                  <div className="eligibility-item">
+                    <div className="eligibility-copy">
+                      <strong>CGPA</strong>
+                      <p>Required {job.minimumCgpa}</p>
+                    </div>
+                    <span className={`badge ${meetsCgpa ? 'badge-approved' : 'badge-rejected'}`}>
+                      {profile.cgpa}
+                    </span>
                   </div>
-                )}
-
-                {success && (
-                  <div style={{
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    color: 'var(--success)',
-                    padding: '10px 14px',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    marginBottom: '14px'
-                  }}>
-                    {success}
+                  <div className="eligibility-item">
+                    <div className="eligibility-copy">
+                      <strong>Branch</strong>
+                      <p>{job.eligibleBranches}</p>
+                    </div>
+                    <span className={`badge ${meetsBranch ? 'badge-approved' : 'badge-rejected'}`}>
+                      {profile.branch}
+                    </span>
                   </div>
-                )}
-
-                <form onSubmit={handleApply}>
-                  <div className="form-group">
-                    <label style={{ fontSize: '13px' }}>Cover Note (Optional)</label>
-                    <textarea
-                      className="form-control"
-                      rows="4"
-                      placeholder="Explain why you are a good fit..."
-                      value={coverLetter}
-                      onChange={(e) => setCoverLetter(e.target.value)}
-                    ></textarea>
+                  <div className="eligibility-item">
+                    <div className="eligibility-copy">
+                      <strong>Backlogs</strong>
+                      <p>{job.backlogsAllowed ? 'Allowed by recruiter' : 'Must be zero'}</p>
+                    </div>
+                    <span className={`badge ${meetsBacklogs ? 'badge-approved' : 'badge-rejected'}`}>
+                      {profile.activeBacklogs}
+                    </span>
                   </div>
+                </div>
+              </section>
 
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
-                    disabled={submitting}
-                  >
-                    {submitting ? 'Submitting...' : 'Submit Application'}
-                  </button>
-                </form>
+              {hasApplied ? (
+                <div className="inline-message success">
+                  <CheckCircle2 size={18} />
+                  <p>You have already applied for this role.</p>
+                </div>
+              ) : isEligible ? (
+                <section>
+                  <h3>Apply now</h3>
+
+                  {error ? (
+                    <div className="inline-message error" style={{ marginBottom: '12px' }}>
+                      <CircleAlert size={18} />
+                      <p>{error}</p>
+                    </div>
+                  ) : null}
+
+                  {success ? (
+                    <div className="inline-message success" style={{ marginBottom: '12px' }}>
+                      <CheckCircle2 size={18} />
+                      <p>{success}</p>
+                    </div>
+                  ) : null}
+
+                  <form onSubmit={handleApply} className="form-stack">
+                    <div className="form-group">
+                      <label htmlFor="cover-note">Cover note</label>
+                      <textarea
+                        id="cover-note"
+                        className="form-control"
+                        placeholder="Share why your background fits this role."
+                        value={coverLetter}
+                        onChange={(event) => setCoverLetter(event.target.value)}
+                      />
+                    </div>
+
+                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                      {submitting ? 'Submitting application' : 'Submit application'}
+                    </button>
+                  </form>
+                </section>
+              ) : (
+                <div className="inline-message warning">
+                  <AlertTriangle size={18} />
+                  <p>You do not currently meet the academic criteria for this role.</p>
+                </div>
+              )}
+
+              <div className="surface-card aside-panel">
+                <h3>Before you submit</h3>
+                <p className="aside-note">
+                  Resume status: {profile.resumeUrl ? 'uploaded and ready' : 'missing from your profile'}.
+                </p>
+                <Link to="/student/profile" className="link-action" style={{ marginTop: '12px' }}>
+                  Review profile
+                  <ArrowRight size={15} />
+                </Link>
               </div>
-            ) : (
-              <div style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                color: 'var(--danger)',
-                padding: '16px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                fontSize: '14px'
-              }}>
-                <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>You do not meet the academic eligibility criteria for this posting.</span>
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </aside>
+        </section>
       </div>
-    </div>
+    </StudentWorkspace>
   );
 };
 

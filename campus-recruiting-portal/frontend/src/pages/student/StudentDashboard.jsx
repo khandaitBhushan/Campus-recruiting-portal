@@ -1,183 +1,287 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  BadgeCheck,
+  BriefcaseBusiness,
+  CalendarRange,
+  FileCheck2,
+  GraduationCap,
+  Sparkles,
+} from 'lucide-react';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
-import { GraduationCap, Briefcase, FileCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import StudentWorkspace from '../../components/StudentWorkspace';
 
 const StudentDashboard = () => {
   const { user } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [postings, setPostings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, appsRes] = await Promise.all([
+        const [profileResponse, applicationsResponse, postingsResponse] = await Promise.all([
           api.get(`/api/students/${user.profileId}`),
-          api.get(`/api/applications/student/${user.profileId}`)
+          api.get(`/api/applications/student/${user.profileId}`),
+          api.get('/api/postings/student'),
         ]);
-        setProfile(profileRes.data);
-        setApplications(appsRes.data);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+
+        setProfile(profileResponse.data);
+        setApplications(applicationsResponse.data);
+        setPostings(postingsResponse.data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [user.profileId]);
 
+  const readinessScore = useMemo(() => {
+    const checks = [
+      Boolean(profile?.name),
+      Boolean(profile?.department),
+      Boolean(profile?.branch),
+      Number(profile?.cgpa) > 0,
+      Boolean(profile?.resumeUrl),
+    ];
+
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }, [profile]);
+
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
+      <div className="loader-container">
         <div className="loader"></div>
       </div>
     );
   }
 
   const activeApplications = applications.filter(
-    app => app.status !== 'SELECTED' && app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'
+    (application) => !['SELECTED', 'REJECTED', 'WITHDRAWN'].includes(application.status)
   ).length;
 
-  const placementStatus = profile?.placed ? 'Placed' : 'Not Placed';
+  const interviewingCount = applications.filter((application) =>
+    ['SHORTLISTED', 'INTERVIEWING'].includes(application.status)
+  ).length;
+
+  const matchedRoles = postings.filter((posting) => {
+    const cgpaCheck = Number(profile?.cgpa) >= Number(posting.minimumCgpa);
+    const branchList = posting.eligibleBranches
+      ?.split(',')
+      .map((branch) => branch.trim().toLowerCase());
+    const branchCheck = branchList?.includes(profile?.branch?.trim().toLowerCase());
+    const backlogCheck = posting.backlogsAllowed || Number(profile?.activeBacklogs) === 0;
+
+    return cgpaCheck && branchCheck && backlogCheck;
+  });
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
-      {/* Welcome Section */}
-      <div className="glass-panel" style={{
-        background: 'linear-gradient(135deg, rgba(30, 144, 255, 0.1), rgba(30, 144, 255, 0.02))',
-        marginBottom: '32px'
-      }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-          Hello, {profile?.name}! 👋
-        </h1>
-        <p style={{ color: 'var(--text-muted)' }}>
-          Welcome to your Placement Dashboard. You can browse active job postings, check eligibility, apply, and monitor application states in real-time.
-        </p>
-      </div>
-
-      {/* Metrics Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '24px',
-        marginBottom: '32px'
-      }}>
-        <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(30, 144, 255, 0.1)' }}>
-            <GraduationCap size={24} color="var(--primary)" />
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Academic CGPA</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{profile?.cgpa}</div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)' }}>
-            <CheckCircle2 size={24} color="var(--success)" />
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Placement Status</div>
-            <div style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              marginTop: '4px',
-              color: profile?.placed ? 'var(--success)' : 'var(--text)'
-            }}>
-              {placementStatus}
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)' }}>
-            <Briefcase size={24} color="var(--warning)" />
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Active Applications</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{activeApplications}</div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(100, 116, 139, 0.1)' }}>
-            <FileCheck size={24} color="var(--text-muted)" />
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Total Applied</div>
-            <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '4px' }}>{applications.length}</div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-        {/* Recent Applications */}
-        <div className="glass-panel">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Recent Applications</h3>
-            <Link to="/student/applications" style={{
-              fontSize: '14px',
-              color: 'var(--primary)',
-              textDecoration: 'none',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              View All <ChevronRight size={16} />
-            </Link>
-          </div>
-
-          {applications.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px' }}>
-              You haven't submitted any job applications yet.
+    <StudentWorkspace
+      eyebrow="Student workspace"
+      title={`Good morning, ${profile?.name?.split(' ')[0] || 'student'}`}
+      description="Track your placement momentum, keep your profile ready, and move on the roles that fit your academic profile best."
+      profileName={profile?.name}
+      profileEmail={profile?.email}
+      actions={
+        <>
+          <Link to="/student/jobs" className="btn btn-primary">
+            Browse roles
+          </Link>
+          <Link to="/student/profile" className="btn btn-secondary">
+            Update profile
+          </Link>
+        </>
+      }
+      aside={
+        <div className="aside-stack">
+          <div className="surface-card aside-panel reveal">
+            <h3>Readiness score</h3>
+            <p className="aside-note">
+              A complete profile keeps eligible roles easy to apply to and helps you avoid
+              last-minute blockers.
             </p>
-          ) : (
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Job Title</th>
-                    <th>Company</th>
-                    <th>Date Applied</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.slice(0, 4).map((app) => (
-                    <tr key={app.id}>
-                      <td style={{ fontWeight: '500' }}>{app.postingTitle}</td>
-                      <td>{app.companyName}</td>
-                      <td>{new Date(app.appliedAt).toLocaleDateString()}</td>
-                      <td>
-                        <span className={`badge badge-${app.status.toLowerCase()}`}>
-                          {app.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="readiness-meter">
+              <div className="readiness-track">
+                <div className="readiness-fill" style={{ width: `${readinessScore}%` }} />
+              </div>
+              <strong className="stat-number">{readinessScore}% complete</strong>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Quick Actions */}
-        <div className="glass-panel" style={{ height: 'fit-content' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>Quick Actions</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Link to="/student/jobs" className="btn btn-primary" style={{ width: '100%' }}>
-              Browse Job Postings
-            </Link>
-            <Link to="/student/profile" className="btn btn-outline" style={{ width: '100%' }}>
-              Update Profile & Resume
-            </Link>
+          <div className="surface-card aside-panel reveal">
+            <h3>Profile snapshot</h3>
+            <div className="summary-list">
+              <div className="summary-item">
+                <GraduationCap size={16} />
+                <span>{profile?.branch}</span>
+              </div>
+              <div className="summary-item">
+                <BadgeCheck size={16} />
+                <span>{profile?.cgpa} CGPA</span>
+              </div>
+              <div className="summary-item">
+                <FileCheck2 size={16} />
+                <span>{profile?.resumeUrl ? 'Resume uploaded' : 'Resume missing'}</span>
+              </div>
+            </div>
           </div>
         </div>
+      }
+    >
+      <div className="page-stack">
+        <section className="hero-banner reveal">
+          <h2>Stay ready for the next shortlist round.</h2>
+          <p>
+            You currently have {activeApplications} active applications and {matchedRoles.length}{' '}
+            approved roles that already fit your profile.
+          </p>
+          <div className="hero-meta">
+            <span className="meta-pill">
+              <CalendarRange size={15} />
+              Placement status: {profile?.placed ? 'Placed' : 'Seeking opportunities'}
+            </span>
+            <span className="meta-pill">
+              <Sparkles size={15} />
+              Resume: {profile?.resumeUrl ? 'Ready to apply' : 'Needs upload'}
+            </span>
+          </div>
+        </section>
+
+        <section className="metrics-grid">
+          <div className="surface-card metric-card reveal">
+            <div className="metric-icon">
+              <GraduationCap size={22} />
+            </div>
+            <div>
+              <p className="metric-label">Academic CGPA</p>
+              <div className="metric-value">{profile?.cgpa}</div>
+              <p className="metric-note">{profile?.department}</p>
+            </div>
+          </div>
+
+          <div className="surface-card metric-card reveal">
+            <div className="metric-icon">
+              <BriefcaseBusiness size={22} />
+            </div>
+            <div>
+              <p className="metric-label">Active applications</p>
+              <div className="metric-value">{activeApplications}</div>
+              <p className="metric-note">{applications.length} total submissions</p>
+            </div>
+          </div>
+
+          <div className="surface-card metric-card reveal">
+            <div className="metric-icon">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <p className="metric-label">Matched roles</p>
+              <div className="metric-value">{matchedRoles.length}</div>
+              <p className="metric-note">Approved roles you can act on now</p>
+            </div>
+          </div>
+
+          <div className="surface-card metric-card reveal">
+            <div className="metric-icon">
+              <BadgeCheck size={22} />
+            </div>
+            <div>
+              <p className="metric-label">Interview pipeline</p>
+              <div className="metric-value">{interviewingCount}</div>
+              <p className="metric-note">Shortlisted or interviewing</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="highlights-grid">
+          <div className="section-card reveal">
+            <div className="section-header">
+              <div>
+                <h2 className="card-heading">Recent applications</h2>
+                <p className="card-subheading">Your latest movement across open roles.</p>
+              </div>
+              <Link to="/student/applications" className="link-action">
+                View all
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {applications.length === 0 ? (
+              <div className="empty-state">
+                <BriefcaseBusiness size={28} />
+                <p>No applications yet. Start with roles that match your branch and CGPA.</p>
+                <Link to="/student/jobs" className="btn btn-primary">
+                  Browse roles
+                </Link>
+              </div>
+            ) : (
+              <div className="list-stack">
+                {applications.slice(0, 4).map((application) => (
+                  <div key={application.id} className="list-row">
+                    <div>
+                      <h3>{application.postingTitle}</h3>
+                      <p>{application.companyName}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className={`badge badge-${application.status.toLowerCase()}`}>
+                        {application.status}
+                      </span>
+                      <div
+                        className="list-meta"
+                        style={{ justifyContent: 'flex-end', marginTop: '8px' }}
+                      >
+                        <span>{new Date(application.appliedAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="section-card reveal">
+            <div className="section-header">
+              <div>
+                <h2 className="card-heading">Next best actions</h2>
+                <p className="card-subheading">Small updates that increase your placement speed.</p>
+              </div>
+            </div>
+
+            <div className="list-stack">
+              <div className="list-row">
+                <div>
+                  <h3>{profile?.resumeUrl ? 'Resume looks ready' : 'Upload your resume'}</h3>
+                  <p>
+                    {profile?.resumeUrl
+                      ? 'You can apply immediately without profile blockers.'
+                      : 'A missing resume prevents submissions from the job detail page.'}
+                  </p>
+                </div>
+                <Link to="/student/profile" className="btn btn-secondary">
+                  {profile?.resumeUrl ? 'Review profile' : 'Upload now'}
+                </Link>
+              </div>
+
+              <div className="list-row">
+                <div>
+                  <h3>{matchedRoles.length} matched roles are live</h3>
+                  <p>Prioritize roles where your CGPA, branch, and backlog status already fit.</p>
+                </div>
+                <Link to="/student/jobs" className="btn btn-primary">
+                  Open jobs
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </StudentWorkspace>
   );
 };
 

@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  Award,
+  BriefcaseBusiness,
+  Filter,
+  MapPin,
+  Search,
+  Wallet,
+} from 'lucide-react';
 import api from '../../services/api';
-import { Search, MapPin, DollarSign, Award, ArrowRight } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext';
+import StudentWorkspace from '../../components/StudentWorkspace';
 
 const StudentJobs = () => {
+  const { user } = useContext(AuthContext);
   const [postings, setPostings] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [filteredPostings, setFilteredPostings] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [minCtc, setMinCtc] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
@@ -16,36 +26,60 @@ const StudentJobs = () => {
   useEffect(() => {
     const fetchPostings = async () => {
       try {
-        const response = await api.get('/api/postings/student');
-        setPostings(response.data);
-        setFilteredPostings(response.data);
-      } catch (err) {
-        console.error('Error fetching job postings:', err);
+        const [postingsResponse, profileResponse] = await Promise.all([
+          api.get('/api/postings/student'),
+          api.get(`/api/students/${user.profileId}`),
+        ]);
+
+        setPostings(postingsResponse.data);
+        setFilteredPostings(postingsResponse.data);
+        setProfile(profileResponse.data);
+      } catch (error) {
+        console.error('Error fetching job postings:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchPostings();
-  }, []);
+  }, [user.profileId]);
+
+  const matchesProfile = (posting) => {
+    if (!profile) {
+      return false;
+    }
+
+    const branchList = posting.eligibleBranches
+      .split(',')
+      .map((branch) => branch.trim().toLowerCase());
+
+    return (
+      Number(profile.cgpa) >= Number(posting.minimumCgpa) &&
+      branchList.includes(profile.branch.trim().toLowerCase()) &&
+      (posting.backlogsAllowed || Number(profile.activeBacklogs) === 0)
+    );
+  };
 
   useEffect(() => {
     let result = postings;
 
     if (searchTerm) {
       result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+        (posting) =>
+          posting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          posting.companyName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (minCtc) {
-      result = result.filter((p) => p.ctc >= parseFloat(minCtc));
+      result = result.filter((posting) => posting.ctc >= parseFloat(minCtc));
     }
 
     if (selectedBranch) {
-      result = result.filter((p) => {
-        const branches = p.eligibleBranches.split(',').map((b) => b.trim().toLowerCase());
+      result = result.filter((posting) => {
+        const branches = posting.eligibleBranches
+          .split(',')
+          .map((branch) => branch.trim().toLowerCase());
         return branches.includes(selectedBranch.toLowerCase());
       });
     }
@@ -53,146 +87,193 @@ const StudentJobs = () => {
     setFilteredPostings(result);
   }, [searchTerm, minCtc, selectedBranch, postings]);
 
+  const allBranches = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          postings
+            .flatMap((posting) => posting.eligibleBranches.split(','))
+            .map((branch) => branch.trim())
+            .filter(Boolean)
+        )
+      ),
+    [postings]
+  );
+
+  const matchedCount = filteredPostings.filter(matchesProfile).length;
+
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
+      <div className="loader-container">
         <div className="loader"></div>
       </div>
     );
   }
 
-  // Get unique branch values from postings for filter dropdown
-  const allBranches = Array.from(
-    new Set(
-      postings
-        .flatMap((p) => p.eligibleBranches.split(','))
-        .map((b) => b.trim())
-        .filter((b) => b !== '')
-    )
-  );
-
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
-      <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '24px' }}>Browse Approved Jobs</h1>
-
-      {/* Filter controls */}
-      <div className="glass-panel" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '32px'
-      }}>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label>Search Role or Company</label>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--text-muted)'
-            }} />
-            <input
-              type="text"
-              className="form-control"
-              style={{ paddingLeft: '38px' }}
-              placeholder="e.g. Data Analyst"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+    <StudentWorkspace
+      eyebrow="Approved roles"
+      title="Browse active job openings"
+      description="Filter by role, package, and branch, then focus on openings that already align with your academic profile."
+      profileName={profile?.name}
+      profileEmail={profile?.email}
+      actions={
+        <Link to="/student/profile" className="btn btn-secondary">
+          Review my profile
+        </Link>
+      }
+      aside={
+        <div className="aside-stack">
+          <div className="surface-card aside-panel reveal">
+            <h3>Matching roles</h3>
+            <p className="aside-note">
+              {matchedCount} of the current results fit your profile based on branch, CGPA, and
+              backlog rules.
+            </p>
+          </div>
+          <div className="surface-card aside-panel reveal">
+            <h3>Search smarter</h3>
+            <p className="aside-note">
+              Use branch and CTC filters together when you want high-fit roles first, then open
+              details to confirm deadline and backlog policy.
+            </p>
           </div>
         </div>
+      }
+    >
+      <div className="page-stack">
+        <section className="hero-banner reveal">
+          <h2>{filteredPostings.length} approved roles are open right now.</h2>
+          <p>
+            {matchedCount > 0
+              ? `${matchedCount} roles already look eligible for you.`
+              : 'Refine your filters or update your profile to discover stronger matches.'}
+          </p>
+          <div className="hero-meta">
+            <span className="meta-pill">
+              <BriefcaseBusiness size={15} />
+              {postings.length} total approved opportunities
+            </span>
+            <span className="meta-pill">
+              <Filter size={15} />
+              Filters stay scoped to your current search
+            </span>
+          </div>
+        </section>
 
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label>Minimum CTC (LPA)</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="e.g. 8"
-            value={minCtc}
-            onChange={(e) => setMinCtc(e.target.value)}
-          />
-        </div>
+        <section className="filter-panel reveal">
+          <div className="section-header">
+            <div>
+              <h2 className="card-heading">Refine results</h2>
+              <p className="card-subheading">Narrow by role, package, and eligible branch.</p>
+            </div>
+          </div>
 
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label>Eligible Branch</label>
-          <select
-            className="form-control"
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-          >
-            <option value="">All Branches</option>
-            {allBranches.map((br) => (
-              <option key={br} value={br}>{br}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Job Card Grid */}
-      {filteredPostings.length === 0 ? (
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '48px' }}>
-          <p style={{ color: 'var(--text-muted)' }}>No job postings found matching the filter criteria.</p>
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '24px'
-        }}>
-          {filteredPostings.map((p) => (
-            <div key={p.id} className="glass-panel" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-              padding: '24px'
-            }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                  <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{p.title}</h3>
-                    <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '14px' }}>{p.companyName}</p>
-                  </div>
-                  <span className="badge badge-approved" style={{ fontSize: '11px' }}>{p.employmentType}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                    <MapPin size={16} />
-                    <span>{p.location}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                    <DollarSign size={16} />
-                    <span>Package: {p.ctc} LPA</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                    <Award size={16} />
-                    <span>Min CGPA Cutoff: {p.minimumCgpa}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderTop: '1px solid var(--border)',
-                paddingTop: '16px',
-                marginTop: '12px'
-              }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  Deadline: {new Date(p.deadline).toLocaleDateString()}
-                </span>
-                <Link to={`/student/jobs/${p.id}`} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px' }}>
-                  View Details <ArrowRight size={14} />
-                </Link>
+          <div className="filter-grid">
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label htmlFor="job-search">Search role or company</label>
+              <div className="input-with-icon">
+                <Search size={16} />
+                <input
+                  id="job-search"
+                  type="text"
+                  className="form-control"
+                  placeholder="Data analyst, product intern, Meridian Logistics..."
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                />
               </div>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label htmlFor="job-ctc">Minimum CTC</label>
+              <input
+                id="job-ctc"
+                type="number"
+                className="form-control"
+                placeholder="8"
+                value={minCtc}
+                onChange={(event) => setMinCtc(event.target.value)}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label htmlFor="job-branch">Eligible branch</label>
+              <select
+                id="job-branch"
+                className="form-control"
+                value={selectedBranch}
+                onChange={(event) => setSelectedBranch(event.target.value)}
+              >
+                <option value="">All branches</option>
+                {allBranches.map((branch) => (
+                  <option key={branch} value={branch}>
+                    {branch}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </section>
+
+        {filteredPostings.length === 0 ? (
+          <section className="section-card reveal">
+            <div className="empty-state">
+              <Search size={28} />
+              <p>No roles matched this search. Try a broader title or clear one of the filters.</p>
+            </div>
+          </section>
+        ) : (
+          <section className="jobs-grid">
+            {filteredPostings.map((posting) => {
+              const isMatch = matchesProfile(posting);
+
+              return (
+                <article key={posting.id} className="job-card reveal">
+                  <div className="job-card-header">
+                    <div>
+                      <h3 className="job-card-title">{posting.title}</h3>
+                      <p className="job-card-company">{posting.companyName}</p>
+                    </div>
+                    <span className={`badge ${isMatch ? 'badge-approved' : 'badge-pending'}`}>
+                      {isMatch ? 'Good match' : posting.employmentType}
+                    </span>
+                  </div>
+
+                  <div className="job-card-meta">
+                    <div className="summary-item">
+                      <MapPin size={15} />
+                      <span>{posting.location}</span>
+                    </div>
+                    <div className="summary-item">
+                      <Wallet size={15} />
+                      <span>{posting.ctc} LPA</span>
+                    </div>
+                    <div className="summary-item">
+                      <Award size={15} />
+                      <span>CGPA cutoff {posting.minimumCgpa}</span>
+                    </div>
+                  </div>
+
+                  <p className="aside-note">
+                    Eligible branches: {posting.eligibleBranches}. Deadline:{' '}
+                    {new Date(posting.deadline).toLocaleDateString()}.
+                  </p>
+
+                  <div className="job-card-foot">
+                    <span>{posting.employmentType}</span>
+                    <Link to={`/student/jobs/${posting.id}`} className="btn btn-primary">
+                      View details
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
+      </div>
+    </StudentWorkspace>
   );
 };
 

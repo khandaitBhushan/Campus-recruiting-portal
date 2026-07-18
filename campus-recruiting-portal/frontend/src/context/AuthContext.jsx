@@ -8,8 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const loadUser = () => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const storedUser = sessionStorage.getItem('user');
+    const storedToken = sessionStorage.getItem('token');
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
     } else {
@@ -20,9 +20,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     loadUser();
-    const handleAuthChange = () => loadUser();
-    window.addEventListener('auth-change', handleAuthChange);
-    return () => window.removeEventListener('auth-change', handleAuthChange);
   }, []);
 
   const login = async (email, password) => {
@@ -33,15 +30,15 @@ export const AuthProvider = ({ children }) => {
       role: data.role,
       profileId: data.profileId,
     };
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(loggedUser));
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem('user', JSON.stringify(loggedUser));
     setUser(loggedUser);
     return loggedUser;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     setUser(null);
   };
 
