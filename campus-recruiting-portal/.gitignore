@@ -1,0 +1,19 @@
+
+# Node
+node_modules/
+.next/
+frontend/.env.local
+
+# Java
+target/
+*.class
+backend/.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+EOF
