@@ -44,7 +44,9 @@ public class DemoDataInitializer implements CommandLineRunner {
 	@Override
 	@Transactional
 	public void run(String... args) {
-		if (userRepository.count() > 0) {
+		seedCorpayIfMissing();
+
+		if (userRepository.count() > 1) {
 			return;
 		}
 
@@ -183,5 +185,37 @@ public class DemoDataInitializer implements CommandLineRunner {
 		applicationRepository.save(arjunApplication);
 		applicationRepository.save(sanaApplication);
 		applicationRepository.save(vikramApplication);
+	}
+
+	private void seedCorpayIfMissing() {
+		if (userRepository.existsByEmail("campus@corpay.example")) {
+			return;
+		}
+		User corpayUser = userRepository.save(new User("campus@corpay.example", passwordEncoder.encode("password123"), UserRole.COMPANY));
+		Company corpay = new Company(corpayUser, "Corpay", "Fintech & Global Payments", "campus@corpay.example");
+		corpay.approve();
+		companyRepository.save(corpay);
+
+		JobPosting corpaySde = new JobPosting(corpay, "Software Development Engineer (Fintech)", "Bengaluru", "Full-time",
+				BigDecimal.valueOf(14.5), "Build high-throughput global payment processing microservices using Java and cloud APIs.",
+				"CGPA 7.0+, CSE/IT, no active backlogs", BigDecimal.valueOf(7.0), "CSE, IT", false,
+				LocalDate.now().plusDays(25));
+		corpaySde.approve();
+
+		JobPosting corpayCloud = new JobPosting(corpay, "Cloud Systems & DevOps Engineer", "Pune", "Full-time",
+				BigDecimal.valueOf(12.0), "Automate multi-region AWS infrastructure, Kubernetes clusters, and payment pipelines.",
+				"CGPA 6.5+, CSE/IT/ECE, backlogs allowed", BigDecimal.valueOf(6.5), "CSE, IT, ECE", true,
+				LocalDate.now().plusDays(20));
+		corpayCloud.approve();
+
+		JobPosting corpayData = new JobPosting(corpay, "Data Platform Engineer", "Hyderabad", "Full-time",
+				BigDecimal.valueOf(13.2), "Develop real-time fraud monitoring data pipelines and financial streaming analytics.",
+				"CGPA 7.5+, CSE/IT/Mathematics, no active backlogs", BigDecimal.valueOf(7.5), "CSE, IT", false,
+				LocalDate.now().plusDays(30));
+		corpayData.approve();
+
+		postingRepository.save(corpaySde);
+		postingRepository.save(corpayCloud);
+		postingRepository.save(corpayData);
 	}
 }
