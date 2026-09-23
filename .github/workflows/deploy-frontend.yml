@@ -30,14 +30,14 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: campus-recruiting-portal/frontend/package-lock.json
 
       - name: Install Dependencies
-        working-directory: frontend
+        working-directory: campus-recruiting-portal/frontend
         run: npm ci
 
       - name: Build Frontend
-        working-directory: frontend
+        working-directory: campus-recruiting-portal/frontend
         env:
           VITE_API_URL: https://campus-recruiting-portal-gxuk.onrender.com
         run: npm run build
@@ -48,7 +48,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/dist
+          path: campus-recruiting-portal/frontend/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
