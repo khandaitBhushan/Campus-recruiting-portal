@@ -1,11 +1,11 @@
 # Campus Recruiting Portal (CRP) - Master Manual & Technical Reference Guide
-[![Watch the Demo Video](/campus-recruiting-portal/video_preview.png)](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
 
+> 🌐 **Live Application**: [https://khandaitbhushan.github.io/Campus-recruiting-portal/](https://khandaitbhushan.github.io/Campus-recruiting-portal/)  
+> ⚡ **Production API (Render)**: [https://campus-recruiting-portal-gxuk.onrender.com](https://campus-recruiting-portal-gxuk.onrender.com)  
+> 🏥 **Health Check**: [https://campus-recruiting-portal-gxuk.onrender.com/health](https://campus-recruiting-portal-gxuk.onrender.com/health)  
 > 🎥 **Walkthrough Video**: [Click here to watch the full project demonstration on Google Drive](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
 
-This folder contains the React web application client for the Campus Recruiting Portal. Built on **React 19** and bundled with **Vite**, the interface utilizes a custom vanilla CSS design system featuring dark mode capability and a responsive, glassmorphic layout.
-
----
+[![Watch the Demo Video](/campus-recruiting-portal/video_preview.png)](https://drive.google.com/file/d/1pZfu8G3xrySDFKOFGNVWgT60PBL_8UjR/view?usp=sharing)
 
 A secure, transactional web portal designed to coordinate university campus placement activities. This application establishes a unified workspace connecting **Students**, **Registered Companies**, and the **University Placement Cell (Admin)** to automate the recruitment pipeline—from company profile validation and job eligibility screening to bulk data imports and dynamic PDF analytics reporting.
 
@@ -108,7 +108,7 @@ erDiagram
 
 ### Table Metadata & Constraints
 - **`users`**: Base credentials. `role` stores enums: `ADMIN`, `STUDENT`, `COMPANY`.
-- **`students`**: Academic metrics. `cgpa` is constrained to `DECIMAL(3, 2)`. `user_id` has a unique foreign key constraint linking to `users(id)`.
+- **`students`**: Academic metrics. `cgpa` is constrained to `DECIMAL(3,2)`. `user_id` has a unique foreign key constraint linking to `users(id)`.
 - **`companies`**: Status records (`PENDING`, `APPROVED`, `REJECTED`, `DEACTIVATED`).
 - **`job_postings`**: Contains target specifications. Holds status tags (`PENDING`, `APPROVED`, `REJECTED`, `CLOSED`).
 - **`student_applications`**: Junction table. A composite unique key constraint on `(student_id, posting_id)` restricts students to a single submission per posting.
@@ -183,7 +183,46 @@ sequenceDiagram
 
 ---
 
-## 🛡️ User & Stakeholder Operating Manual
+### 2. Frontend Core Methods
+
+#### 🛰️ Axios Client Request & Response Interceptors
+* **Location**: [services/api.js](file:///e:/campus-recruiting-portal/campus-recruiting-portal/frontend/src/services/api.js)
+* **Code Reference**:
+  ```javascript
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('auth-change'));
+      }
+      return Promise.reject(error);
+    }
+  );
+  ```
+* **How it works**:
+  - **Request Interceptor**: intercepts all API calls, fetches the active JWT from `localStorage`, and appends it to the header.
+  - **Response Interceptor**: traps responses. If the backend returns a `401 Unauthorized` (indicating the JWT has expired), the interceptor immediately clears user credentials from local storage and dispatches a global window event to trigger redirect workflows.
+
+#### 🛡️ Protected Navigation Guard
+* **Location**: [components/RouteGuard.jsx](file:///e:/campus-recruiting-portal/campus-recruiting-portal/frontend/src/components/RouteGuard.jsx)
+* **How it works**: The `RouteGuard` component intercepts React Router navigation hooks. It inspects the globally shared `AuthContext` to determine if a user session is active. If the user is unauthenticated or has a role that is not listed in the component's `allowedRoles` array, it forces a redirect to the login screen.
+
+---
+
+## 🛠️ User & Stakeholder Operating Manual
 
 ### 🎓 For Students
 1. **Account Registration**: Sign up using your official email ending with `@university.edu`.
