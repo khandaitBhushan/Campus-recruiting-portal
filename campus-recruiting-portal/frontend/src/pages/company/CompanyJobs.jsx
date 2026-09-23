@@ -32,8 +32,8 @@ const CompanyJobs = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className="portal-container">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: '700' }}>Job Openings</h1>
         <Link to="/company/post-job" className="btn btn-primary">
           <Plus size={18} /> Post New Job

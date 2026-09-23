@@ -38,10 +38,10 @@ const AdminAnalytics = () => {
     : 1;
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '24px' }}>Placement Statistics & Analytics</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' }}>
+      <div className="responsive-grid-2" style={{ marginBottom: '32px' }}>
         {/* Branch Placement Rates */}
         <div className="glass-panel">
           <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -133,7 +133,7 @@ const AdminAnalytics = () => {
           {data?.applicationsPerCompany?.map((company) => {
             const percentage = Math.round((company.applications / maxCompanyApps) * 100);
             return (
-              <div key={company.companyId} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 60px', alignItems: 'center', gap: '16px' }}>
+              <div key={company.companyId} style={{ display: 'grid', gridTemplateColumns: 'clamp(90px, 25%, 150px) 1fr auto', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {company.companyName}
                 </span>

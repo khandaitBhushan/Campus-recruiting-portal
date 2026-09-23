@@ -97,15 +97,15 @@ const AdminStudents = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '24px' }}>Manage Student Records</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', marginBottom: '32px' }}>
+      <div className="responsive-split-2-1" style={{ marginBottom: '32px' }}>
         {/* Student Search and Table List */}
         <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Student Roster</h3>
-            <div style={{ position: 'relative', width: '220px' }}>
+            <div style={{ position: 'relative', width: 'min(240px, 100%)' }}>
               <Search size={16} style={{
                 position: 'absolute',
                 left: '10px',

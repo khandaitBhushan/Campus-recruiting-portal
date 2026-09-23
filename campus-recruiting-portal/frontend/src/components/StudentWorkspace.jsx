@@ -136,11 +136,23 @@ const StudentWorkspace = ({
 
       <div className="workspace-main-shell">
         <div className="workspace-mobile-nav" aria-label="Student navigation">
-          <div className="workspace-mobile-brand">
-            <div className="sidebar-brand-mark">
-              <GraduationCap size={16} />
+          <div className="workspace-mobile-brand" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="sidebar-brand-mark">
+                <GraduationCap size={16} />
+              </div>
+              <span>Student portal</span>
             </div>
-            <span>Student portal</span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+              title="Log out of student portal"
+            >
+              <LogOut size={13} />
+              <span>Log out</span>
+            </button>
           </div>
           <div className="workspace-mobile-links">
             {navigationItems.map(({ label, to, icon: Icon, match }) => (

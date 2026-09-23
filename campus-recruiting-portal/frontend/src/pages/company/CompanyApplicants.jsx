@@ -51,7 +51,7 @@ const CompanyApplicants = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <Link to="/company/jobs" style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -82,12 +82,7 @@ const CompanyApplicants = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {applicants.map((app) => (
-            <div key={app.id} className="glass-panel" style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr',
-              gap: '24px',
-              alignItems: 'flex-start'
-            }}>
+            <div key={app.id} className="glass-panel split-card-row">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
                   <h3 style={{ fontSize: '18px', fontWeight: '700' }}>{app.studentName}</h3>
@@ -133,15 +128,7 @@ const CompanyApplicants = () => {
               </div>
 
               {/* Action Buttons */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                borderLeft: '1px solid var(--border)',
-                paddingLeft: '24px',
-                height: '100%',
-                justifyContent: 'center'
-              }}>
+              <div className="split-card-actions">
                 <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                   Change Candidate Status
                 </div>

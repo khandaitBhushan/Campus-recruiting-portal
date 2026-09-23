@@ -254,13 +254,16 @@ textarea.form-control {
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--surface-panel);
+  width: 100%;
 }
 
 table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
 }
 
@@ -1236,6 +1239,149 @@ tr:last-child td {
   .workspace-actions a,
   .profile-panel .btn {
     width: 100%;
+  }
+}
+
+/* =========================================================
+   PORTAL-WIDE RESPONSIVE UTILITIES & GRIDS
+   ========================================================= */
+
+.portal-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px 40px 40px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .portal-container {
+    padding: 0 20px 28px 20px;
+  }
+}
+
+@media (max-width: 540px) {
+  .portal-container {
+    padding: 0 14px 20px 14px;
+  }
+}
+
+/* Responsive Grid Utilities */
+.responsive-split-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+
+.responsive-split-1-2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+}
+
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .responsive-split-2-1,
+  .responsive-split-1-2,
+  .responsive-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Responsive Split Cards (Admin pending review & Company applicants) */
+.split-card-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.split-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid var(--line-soft);
+  padding-left: 24px;
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .split-card-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .split-card-actions {
+    border-left: none;
+    border-top: 1px solid var(--line-soft);
+    padding-left: 0;
+    padding-top: 16px;
+  }
+}
+
+/* Responsive Navigation Bar */
+.navbar-toggle-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--ink-800);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.navbar-toggle-btn:hover {
+  background: var(--surface-muted);
+}
+
+.navbar-desktop-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.navbar-mobile-drawer {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  margin-top: 12px;
+  animation: slideDownNav 0.2s ease-out;
+}
+
+@keyframes slideDownNav {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-toggle-btn {
+    display: inline-flex;
+  }
+  .navbar-desktop-content {
+    display: none;
+  }
+  .navbar-mobile-drawer.open {
+    display: flex;
   }
 }
 

@@ -100,7 +100,7 @@ const CompanyDashboard = () => {
   const pendingPostings = jobs.filter(j => j.status === 'PENDING').length;
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       {/* Status Warning Panel for non-approved companies */}
       {!isApproved && (
         <div className="glass-panel" style={{
@@ -137,7 +137,7 @@ const CompanyDashboard = () => {
       )}
 
       {/* Main Info Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
+      <div className="responsive-split-1-2">
         {/* Company Card / Logo Upload */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="glass-panel" style={{ textAlign: 'center' }}>
@@ -234,7 +234,7 @@ const CompanyDashboard = () => {
           {isApproved ? (
             <>
               {/* Metrics Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div className="responsive-grid-2">
                 <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                   <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)' }}>
                     <FileCheck size={24} color="var(--success)" />
@@ -259,11 +259,11 @@ const CompanyDashboard = () => {
               {/* Action Board */}
               <div className="glass-panel">
                 <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>Recruiter Actions</h3>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <Link to="/company/post-job" className="btn btn-primary" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <Link to="/company/post-job" className="btn btn-primary" style={{ flex: '1 1 200px' }}>
                     Post a New Job
                   </Link>
-                  <Link to="/company/jobs" className="btn btn-outline" style={{ flex: 1 }}>
+                  <Link to="/company/jobs" className="btn btn-outline" style={{ flex: '1 1 200px' }}>
                     Manage Job Openings
                   </Link>
                 </div>

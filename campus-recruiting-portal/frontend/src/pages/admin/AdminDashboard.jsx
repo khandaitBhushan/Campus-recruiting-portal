@@ -50,7 +50,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       {/* Header */}
       <div className="glass-panel" style={{
         background: 'linear-gradient(135deg, rgba(30, 144, 255, 0.1), rgba(30, 144, 255, 0.02))',
@@ -115,15 +115,11 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Admin Quick Links Board */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+      <div className="responsive-split-2-1">
         <div className="glass-panel">
           <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>Admin Task Center</h3>
           
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '20px'
-          }}>
+          <div className="responsive-grid-2">
             <Link to="/admin/companies" className="glass-panel" style={{
               textDecoration: 'none',
               color: 'var(--text)',

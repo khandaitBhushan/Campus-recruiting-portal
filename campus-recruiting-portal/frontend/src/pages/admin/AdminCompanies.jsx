@@ -64,7 +64,7 @@ const AdminCompanies = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '24px' }}>Visiting Companies</h1>
 
       {/* Reject Reason input dialog overlay */}
@@ -80,9 +80,10 @@ const AdminCompanies = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 10000
+          zIndex: 10000,
+          padding: '16px'
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg)' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', backgroundColor: 'var(--bg)' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>Enter Rejection Reason</h3>
             <textarea
               className="form-control"

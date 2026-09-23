@@ -57,7 +57,7 @@ const CompanyPostJob = () => {
   };
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <Link to="/company/dashboard" style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -114,8 +114,8 @@ const CompanyPostJob = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <div className="form-grid">
+            <div className="form-group full-span">
               <label>Job Title</label>
               <input
                 type="text"
@@ -177,7 +177,7 @@ const CompanyPostJob = () => {
               />
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group full-span">
               <label>Job Description</label>
               <textarea
                 className="form-control"
@@ -189,7 +189,7 @@ const CompanyPostJob = () => {
               ></textarea>
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group full-span">
               <h3 style={{ fontSize: '15px', fontWeight: '700', marginTop: '12px', marginBottom: '8px' }}>
                 Eligibility Constraints
               </h3>
@@ -210,7 +210,7 @@ const CompanyPostJob = () => {
               />
             </div>
 
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '28px' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '16px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
@@ -222,7 +222,7 @@ const CompanyPostJob = () => {
               </label>
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group full-span">
               <label>Eligible Branches (comma separated)</label>
               <input
                 type="text"
@@ -234,7 +234,7 @@ const CompanyPostJob = () => {
               />
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group full-span">
               <label>Summary Eligibility Statement</label>
               <input
                 type="text"

@@ -151,8 +151,8 @@ const Register = () => {
         <form onSubmit={handleRegister}>
           {role === 'STUDENT' ? (
             /* Student Form Fields */
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-grid">
+              <div className="form-group full-span">
                 <label>Full Name</label>
                 <input
                   type="text"
@@ -239,7 +239,7 @@ const Register = () => {
                 />
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group full-span">
                 <label>Graduation Year</label>
                 <input
                   type="number"

@@ -52,7 +52,7 @@ const AdminPendingJobs = () => {
   }
 
   return (
-    <div style={{ padding: '0 40px 40px 40px' }}>
+    <div className="portal-container">
       <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '24px' }}>Pending Job Postings</h1>
 
       {/* Reject Reason input dialog overlay */}
@@ -68,9 +68,10 @@ const AdminPendingJobs = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 10000
+          zIndex: 10000,
+          padding: '16px'
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg)' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', backgroundColor: 'var(--bg)' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>Enter Rejection Reason</h3>
             <textarea
               className="form-control"
@@ -106,18 +107,13 @@ const AdminPendingJobs = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {postings.map((p) => (
-            <div key={p.id} className="glass-panel" style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr',
-              alignItems: 'center',
-              gap: '24px'
-            }}>
+            <div key={p.id} className="glass-panel split-card-row">
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{p.title}</h3>
                 <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '14px', marginBottom: '12px' }}>
                   {p.companyName}
                 </p>
-                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--text-muted)' }}>
                   <span>Location: <strong>{p.location}</strong></span>
                   <span>Package: <strong>{p.ctc} LPA</strong></span>
                   <span>Cutoff: <strong>{p.minimumCgpa} CGPA</strong></span>
@@ -128,14 +124,7 @@ const AdminPendingJobs = () => {
                 </div>
               </div>
 
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                borderLeft: '1px solid var(--border)',
-                paddingLeft: '24px',
-                alignItems: 'flex-start'
-              }}>
+              <div className="split-card-actions">
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                   Deadline: {new Date(p.deadline).toLocaleDateString()}
                 </span>
