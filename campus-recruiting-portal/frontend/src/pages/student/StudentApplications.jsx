@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Download, FileText, Sparkles } from 'lucide-react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import StudentWorkspace from '../../components/StudentWorkspace';
 
@@ -113,7 +113,7 @@ const StudentApplications = () => {
                       </span>
                       {application.resumeUrl ? (
                         <a
-                          href={`http://localhost:8080${application.resumeUrl}`}
+                          href={`${API_BASE_URL}${application.resumeUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="link-action"

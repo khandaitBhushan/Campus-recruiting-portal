@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { Building, Upload, AlertCircle, CheckCircle, FileSpreadsheet, Send, FileCheck } from 'lucide-react';
 
@@ -143,7 +143,7 @@ const CompanyDashboard = () => {
           <div className="glass-panel" style={{ textAlign: 'center' }}>
             {company?.logoUrl ? (
               <img 
-                src={`http://localhost:8080${company.logoUrl}`} 
+                src={`${API_BASE_URL}${company.logoUrl}`} 
                 alt={`${company.name} Logo`}
                 style={{
                   width: '90px',

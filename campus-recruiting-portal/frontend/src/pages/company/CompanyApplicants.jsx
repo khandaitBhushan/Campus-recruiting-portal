@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { ArrowLeft, User, Download, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const CompanyApplicants = () => {
@@ -121,7 +121,7 @@ const CompanyApplicants = () => {
 
                 {app.resumeUrl && (
                   <a 
-                    href={`http://localhost:8080${app.resumeUrl}`} 
+                    href={`${API_BASE_URL}${app.resumeUrl}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="btn btn-outline"

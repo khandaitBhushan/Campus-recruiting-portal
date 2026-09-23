@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle, Download, Upload, User } from 'lucide-react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import StudentWorkspace from '../../components/StudentWorkspace';
 
@@ -208,7 +208,7 @@ const StudentProfile = () => {
                   <p>Your current resume is uploaded and ready to use.</p>
                 </div>
                 <a
-                  href={`http://localhost:8080${resumeUrl}`}
+                  href={`${API_BASE_URL}${resumeUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-secondary"

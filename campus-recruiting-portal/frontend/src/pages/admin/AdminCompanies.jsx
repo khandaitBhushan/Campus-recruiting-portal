@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { Building, Check, X, Ban, MessageSquare } from 'lucide-react';
 
 const AdminCompanies = () => {
@@ -134,7 +134,7 @@ const AdminCompanies = () => {
                   <td>
                     {c.logoUrl ? (
                       <img 
-                        src={`http://localhost:8080${c.logoUrl}`} 
+                        src={`${API_BASE_URL}${c.logoUrl}`} 
                         alt="Logo"
                         style={{
                           width: '40px',
